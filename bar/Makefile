@@ -2,6 +2,7 @@
 all: company/bar/bar_pb2.py company/bar/bar_pb2_grpc.py company/bar/bar_pb2.pyi
 
 company/bar/bar_pb2.py company/bar/bar_pb2.pyi company/bar/bar_pb2_grpc.py: protos/bar/bar.proto
+	mkdir -p company
 	python3 -m grpc_tools.protoc \
 		-I protos \
 		--python_out company \

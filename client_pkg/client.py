@@ -1,7 +1,3 @@
-import sys
-
-print(sys.path)
-
 from company.foo import foo_pb2
 from company.bar import bar_pb2
 
