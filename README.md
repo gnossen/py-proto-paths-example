@@ -7,15 +7,23 @@ buffer code. Two actual packages are included: `company.foo` and `company.bar`.
 ```
 .
 ├── foo
+│   ├── company
+│   │   └── foo
+│   │       └── __init__.py
 │   ├── Makefile
 │   └── protos
-│       └── foo
-│           └── foo.proto
+│       └── company
+│           └── foo
+│               └── foo.proto
 ├── bar
+│   ├── company
+│   │   └── bar
+│   │       └── __init__.py
 │   ├── Makefile
 │   └── protos
-│       └── bar
-│           └── bar.proto
+│       └── company
+│           └── bar
+│               └── bar.proto
 ├── client_pkg
 │   ├── client.py
 │   └── run_client.sh
@@ -26,12 +34,19 @@ distributed as a wheel and will likely be hosted in separate source control
 repositories. They both use protocol buffers and they both generated code that
 will ultimately be imported from the `company` namespace package.
 
-Note that the protobuf package of neither `foo.proto` nor `bar.proto` references
-the `company` namespace package. The package for `foo.proto` is simply `foo`.
-This matches its path relative to the proto root for the `foo` package
-(`foo/protos`). It is best practice to ensure that all proto files' packages
-mirror their directory structure relative to the proto root that they are being
-compiled against (the `-I` flag to `protoc`).
+Note that the protobuf package of neither `foo.proto` nor `bar.proto` both reference
+start with `company`. This is frequently done so that multiple organizations can
+share protos within a single codebase and within a single protobuf source tree.
+However, it is often not desirable to let this detail leak into your API and
+put the generated code directly under the `company` directory.
+
+To avoid this, we use `_generated_protos` as the top-level generated source path
+and reference this path from the hand-written wrapper code in both `foo` and
+`bar`:
+
+```python
+from _generated_protos.company.foo import foo_pb2
+```
 
 As a result, after generation, `foo_pb2.py` ends up at the same path relative
 to the generation root (the `--python_out` argument to `protoc`). The same
@@ -43,26 +58,37 @@ the generation of `foo_pb2.pyi` and `foo_pb2_grpc.py` in the same directory.
 ├── foo
 │   ├── company
 │   │   └── foo
-│   │       ├── foo_pb2_grpc.py
-│   │       ├── foo_pb2.py
-│   │       └── foo_pb2.pyi
+│   │       └── __init__.py
+│   ├── _generated_protos
+│   │   └── company
+│   │       └── foo
+│   │           ├── foo_pb2_grpc.py
+│   │           ├── foo_pb2.py
+│   │           └── foo_pb2.pyi
 │   ├── Makefile
 │   └── protos
-│       └── foo
-│           └── foo.proto
+│       └── company
+│           └── foo
+│               └── foo.proto
 ├── bar
 │   ├── company
 │   │   └── bar
-│   │       ├── bar_pb2_grpc.py
-│   │       ├── bar_pb2.py
-│   │       └── bar_pb2.pyi
+│   │       └── __init__.py
+│   ├── _generated_protos
+│   │   └── company
+│   │       └── bar
+│   │           ├── bar_pb2_grpc.py
+│   │           ├── bar_pb2.py
+│   │           └── bar_pb2.pyi
 │   ├── Makefile
 │   └── protos
-│       └── bar
-│           └── bar.proto
+│       └── company
+│           └── bar
+│               └── bar.proto
 ├── client_pkg
 │   ├── client.py
 │   └── run_client.sh
+└── README.md
 ```
 
 The third top-level directory, `client_pkg` demonstrates a third
@@ -75,3 +101,6 @@ and `bar` as wheels using (e.g.) pip.
 ```bash
 PYTHONPATH=$(realpath ../foo):$(realpath ../bar) python3 client.py
 ```
+
+This ensures that `company.foo`, `company.bar`, and `_generated_protos` are all
+resolveable.
