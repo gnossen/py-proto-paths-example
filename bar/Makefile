@@ -1,15 +1,18 @@
-.PHONY: all
-all: company/bar/bar_pb2.py company/bar/bar_pb2_grpc.py company/bar/bar_pb2.pyi
+PROTO_SRC_ROOT=protos
+PROTO_GEN_ROOT=_generated_protos
 
-company/bar/bar_pb2.py company/bar/bar_pb2.pyi company/bar/bar_pb2_grpc.py: protos/bar/bar.proto
-	mkdir -p company
+.PHONY: all
+all: ${PROTO_GEN_ROOT}/company/bar/bar_pb2.py ${PROTO_GEN_ROOT}/company/bar/bar_pb2_grpc.py ${PROTO_GEN_ROOT}/company/bar/bar_pb2.pyi
+
+${PROTO_GEN_ROOT}/company/bar/bar_pb2.py ${PROTO_GEN_ROOT}/company/bar/bar_pb2_grpc.py ${PROTO_GEN_ROOT}/company/bar/bar_pb2.pyi: ${PROTO_SRC_ROOT}/company/bar/bar.proto
+	mkdir -p ${PROTO_GEN_ROOT}
 	python3 -m grpc_tools.protoc \
-		-I protos \
-		--python_out company \
-		--grpc_python_out company \
-		--pyi_out company \
+		-I ${PROTO_SRC_ROOT} \
+		--python_out ${PROTO_GEN_ROOT} \
+		--grpc_python_out ${PROTO_GEN_ROOT} \
+		--pyi_out ${PROTO_GEN_ROOT} \
 		"$<"
 
 .PHONY: clean
 clean: 
-	rm -f company/bar/bar_pb2.py company/bar/bar_pb2_grpc.py company/bar/bar_pb2.pyi
+	rm -f ${PROTO_GEN_ROOT}/company/bar/bar_pb2.py ${PROTO_GEN_ROOT}/company/bar/bar_pb2_grpc.py ${PROTO_GEN_ROOT}/company/bar/bar_pb2.pyi

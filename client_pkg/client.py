@@ -1,7 +1,7 @@
-from company.foo import foo_pb2
-from company.bar import bar_pb2
+import company.foo
+import company.bar
 
-f = foo_pb2.Foo()
-b = bar_pb2.Bar()
+f = company.foo.get_foo()
+b = company.bar.get_bar()
 
-print("Hello world!")
+print(f"Hello foo and bar:\n  {f}  {b}")
